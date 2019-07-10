@@ -1,0 +1,175 @@
+version: 2.1
+
+executors:
+  default-executor:
+    docker:
+      - image: circleci/python:3.7
+    working_directory: ~/build
+
+commands:
+  build-image:
+    parameters:
+      erlang_version:
+        type: string
+      elixir_version:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Login to DockerHub
+          command: docker login -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWD}"
+      - run:
+          name: Build the image
+          command: |
+            export TAG=erlang-<< parameters.erlang_version >>_elixir-<< parameters.elixir_version >>
+            echo "export TAG=${TAG}" >> $BASH_ENV
+            env | sort
+            while [ true ]; do echo -n "."; sleep 10; done &
+            docker build \
+              --build-arg ERLANG_VERSION=<< parameters.erlang_version >> \
+              --build-arg ELIXIR_VERSION=<< parameters.elixir_version >> \
+              -t ${DOCKERHUB_REPO}/${CIRCLE_PROJECT_REPONAME}:${TAG} .
+            kill %1
+      - run: docker push ${DOCKERHUB_REPO}/${CIRCLE_PROJECT_REPONAME}:${TAG}
+
+jobs:
+  only_master:
+    executor: default-executor
+
+    steps:
+      # Just to create only one branch filter in the workflow
+      - run: echo "noop"
+
+  erlang-20-3_elixir-1-6:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "20.3"
+          elixir_version: "1.6"
+
+  erlang-20-3_elixir-1-7:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "20.3"
+          elixir_version: "1.7"
+
+  erlang-20-3_elixir-1-8:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "20.3"
+          elixir_version: "1.8"
+
+
+  erlang-21-3_elixir-1-6:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "21.3"
+          elixir_version: "1.6"
+
+  erlang-21-3_elixir-1-7:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "21.3"
+          elixir_version: "1.7"
+
+  erlang-21-3_elixir-1-8:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "21.3"
+          elixir_version: "1.8"
+
+  erlang-21-3_elixir-1-9:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "21.3"
+          elixir_version: "1.9"
+
+  erlang-22-0_elixir-1-6:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "22.0"
+          elixir_version: "1.6"
+
+  erlang-22-0_elixir-1-7:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "22.0"
+          elixir_version: "1.7"
+
+  erlang-22-0_elixir-1-8:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "22.0"
+          elixir_version: "1.8"
+
+  erlang-22-0_elixir-1-9:
+    executor: default-executor
+
+    steps:
+      - build-image:
+          erlang_version: "22.0"
+          elixir_version: "1.9"
+
+
+workflows:
+  version: 2
+  build_all_images:
+    jobs:
+      - only_master:
+          filters:
+                branches:
+                  only: master
+      - erlang-20-3_elixir-1-6:
+          requires:
+            - only_master
+      - erlang-20-3_elixir-1-7:
+          requires:
+            - only_master
+      - erlang-20-3_elixir-1-8:
+          requires:
+            - only_master
+      - erlang-21-3_elixir-1-6:
+          requires:
+            - only_master
+      - erlang-21-3_elixir-1-7:
+          requires:
+            - only_master
+      - erlang-21-3_elixir-1-8:
+          requires:
+            - only_master
+      - erlang-21-3_elixir-1-9:
+          requires:
+            - only_master
+      - erlang-22-0_elixir-1-6:
+          requires:
+            - only_master
+      - erlang-22-0_elixir-1-7:
+          requires:
+            - only_master
+      - erlang-22-0_elixir-1-8:
+          requires:
+            - only_master
+      - erlang-22-0_elixir-1-9:
+          requires:
+            - only_master
