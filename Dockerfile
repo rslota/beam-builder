@@ -1,5 +1,7 @@
 FROM circleci/python:stretch
 
+USER root
+
 ARG ERLANG_VERSION=22.0
 ARG ELIXIR_VERSION=1.9
 
@@ -34,3 +36,5 @@ RUN echo "deb https://packages.erlang-solutions.com/debian stretch contrib" >> /
         apt-get install --yes \
         esl-erlang=$EXACT_ERLANG_VERSION \
         elixir=$EXACT_ELIXIR_VERSION
+
+USER circleci
