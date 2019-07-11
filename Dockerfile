@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM circleci/python:stretch
 
 ARG ERLANG_VERSION=22.0
 ARG ELIXIR_VERSION=1.9
